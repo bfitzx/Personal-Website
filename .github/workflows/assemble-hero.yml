@@ -1,0 +1,29 @@
+name: assemble-hero
+on:
+  push:
+    branches: [cursor/hero-live-hr-8c7a]
+    paths: [".github/workflows/assemble-hero.yml"]
+permissions:
+  contents: write
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply hero patch and remove assembly files
+        run: |
+          set -euo pipefail
+          git checkout c6b9bad601fc8d9748b0f2b3edb1de3bda13daab -- index.html
+          git apply --whitespace=nowarn hero.diff
+          grep -q 'id="hero-hr-text"' index.html
+          grep -q 'hr-blink' index.html
+          git rm -f hero.diff
+          git rm -rf parts
+          git rm -f .github/workflows/assemble-hero.yml
+          git config user.name "bfitzx"
+          git config user.email "bfitzx@users.noreply.github.com"
+          git add -A
+          git commit -m "Add a simulated live heart rate and daily workout to the hero."
+          git push origin HEAD
